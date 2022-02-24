@@ -64,12 +64,11 @@ def update():
     # init database
     init_database()
     geoms_ids = get_geoms_ids()
-    logging.info(f"geoms_ids: {geoms_ids}")
+    logging.error(f"geoms_ids: {geoms_ids}")
     return jsonify(geoms_ids)
 
     db_cursor = g.db.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
- 
     for geom in GEOMS_IDS:
         p = 0
         while True:
