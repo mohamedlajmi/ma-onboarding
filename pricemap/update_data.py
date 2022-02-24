@@ -1,4 +1,4 @@
-from flask import g, current_app
+from flask import g, current_app, jsonify
 import requests
 import psycopg2
 from datetime import datetime
@@ -65,7 +65,7 @@ def update():
 
     geoms_ids = get_geoms_ids()
     print(f"geoms_ids: {geoms_ids}")
-    return {}
+    return jsonify(geoms_ids)
 
     for geom in GEOMS_IDS:
         p = 0
