@@ -26,6 +26,16 @@ GEOMS_IDS = [
     32701,
 ]
 
+
+def get_geoms_ids():
+    query = "select id from geo_place"
+    cursor = g.db.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    cursor.execute(query)
+    rows = cursor.fetchall()
+    geoms_ids = [row["id"] for row in rows]
+    return geoms_ids
+
+
 def init_database():
     sql = """
         CREATE TABLE listings (
@@ -47,10 +57,14 @@ def init_database():
         print("Error: maybe table already exists?")
         return
 
+
 def update():
     # init database
     init_database()
     db_cursor = g.db.cursor(cursor_factory=psycopg2.extras.DictCursor)
+
+    geoms_ids = get_geoms_ids()
+    print(f"geoms_ids: {geoms_ids}")
 
     for geom in GEOMS_IDS:
         p = 0
@@ -66,17 +80,34 @@ def update():
             for item in d.json():
                 listing_id = item["listing_id"]
                 try:
-                    room_count = 1 if "Studio" in item["title"] else int("".join([s for s in item["title"].split("pièces")[0] if s.isdigit()]))
+                    room_count = (
+                        1
+                        if "Studio" in item["title"]
+                        else int(
+                            "".join(
+                                [
+                                    s
+                                    for s in item["title"].split("pièces")[0]
+                                    if s.isdigit()
+                                ]
+                            )
+                        )
+                    )
                 except:
                     room_count = 0
 
                 try:
-                    price =  int("".join([s for s in item["price"] if s.isdigit()]))
+                    price = int("".join([s for s in item["price"] if s.isdigit()]))
                 except:
                     price = 0
 
                 try:
-                    area = int(item["title"].split("-")[1].replace(" ", '').replace("\u00a0m\u00b2", ''))
+                    area = int(
+                        item["title"]
+                        .split("-")[1]
+                        .replace(" ", "")
+                        .replace("\u00a0m\u00b2", "")
+                    )
                 except:
                     area = 0
 
