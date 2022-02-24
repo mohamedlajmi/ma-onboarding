@@ -32,8 +32,7 @@ def get_geoms_ids():
     query = "select id from geo_place"
     cursor = g.db.cursor(cursor_factory=psycopg2.extras.DictCursor)
     cursor.execute(query)
-    rows = cursor.fetchall()
-    geoms_ids = [row["id"] for row in rows]
+    geoms_ids = [row["id"] for row in cursor]
     g.db.commit()
     return geoms_ids
 
