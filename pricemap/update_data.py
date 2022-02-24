@@ -66,7 +66,7 @@ def update():
     db_cursor = g.db.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
     geoms_ids = get_geoms_ids()
-    logging.INFO(f"geoms_ids: {geoms_ids}")
+    logging.info(f"geoms_ids: {geoms_ids}")
     return jsonify(geoms_ids)
 
     for geom in GEOMS_IDS:
