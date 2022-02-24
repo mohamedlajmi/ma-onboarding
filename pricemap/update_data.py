@@ -2,6 +2,7 @@ from flask import g, current_app, jsonify
 import requests
 import psycopg2
 from datetime import datetime
+import logging
 
 GEOMS_IDS = [
     32684,
@@ -33,6 +34,7 @@ def get_geoms_ids():
     cursor.execute(query)
     rows = cursor.fetchall()
     geoms_ids = [row["id"] for row in rows]
+    g.db.commit()
     return geoms_ids
 
 
@@ -64,7 +66,7 @@ def update():
     db_cursor = g.db.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
     geoms_ids = get_geoms_ids()
-    print(f"geoms_ids: {geoms_ids}")
+    logging.INFO(f"geoms_ids: {geoms_ids}")
     return jsonify(geoms_ids)
 
     for geom in GEOMS_IDS:
