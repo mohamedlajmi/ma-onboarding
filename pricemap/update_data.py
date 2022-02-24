@@ -38,7 +38,7 @@ def get_geoms_ids():
 
 def init_database():
     sql = """
-        CREATE TABLE listings (
+        CREATE TABLE IF NOT EXISTS listings (
             id INTEGER,
             place_id INTEGER,
             price INTEGER,
@@ -65,6 +65,7 @@ def update():
 
     geoms_ids = get_geoms_ids()
     print(f"geoms_ids: {geoms_ids}")
+    return {}
 
     for geom in GEOMS_IDS:
         p = 0
