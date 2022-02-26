@@ -86,7 +86,7 @@ def decode_item(item):
         )
     except:
         logging.error("\nfailed to extract room_count:\n")
-        logging.error(f"{item}")
+        logging.error(f"{json.dumps(item)}")
         room_count = None
 
     # price
