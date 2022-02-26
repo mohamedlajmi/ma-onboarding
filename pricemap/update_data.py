@@ -141,6 +141,8 @@ def update():
                     %(first_seen_at)s,
                     %(last_seen_at)s
                 )
+                ON CONFLICT (id) DO UPDATE
+                SET last_seen_at = %(last_seen_at)s
         """
 
     psycopg2.extras.execute_batch(db_cursor, query, listings, page_size=100)
