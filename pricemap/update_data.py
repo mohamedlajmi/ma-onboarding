@@ -61,7 +61,36 @@ def init_database():
 
 
 def decode_item(item):
-    return {}
+    listing_id = item["listing_id"]
+    try:
+        room_count = (
+            1
+            if "Studio" in item["title"]
+            else int(
+                "".join([s for s in item["title"].split("pièces")[0] if s.isdigit()])
+            )
+        )
+    except:
+        room_count = 0
+
+    try:
+        price = int("".join([s for s in item["price"] if s.isdigit()]))
+    except:
+        price = 0
+
+    try:
+        area = int(
+            item["title"].split("-")[1].replace(" ", "").replace("\u00a0m\u00b2", "")
+        )
+    except:
+        area = 0
+
+    return {
+        "listing_id": listing_id,
+        "room_count": room_count,
+        "price": price,
+        "area": area,
+    }
 
 
 def update():
@@ -88,9 +117,10 @@ def update():
                 logging.error("no more page retrieve next geom")
                 break
 
-            # for item in response.json():
-            #   listing = decode_item(item)
-            #  listings.append(listing)
+            for item in response.json():
+                listing = decode_item(item)
+                listings.append(listing)
+    logging.error(f"listings: {listings}")
     return
     for geom in GEOMS_IDS:
         p = 0
