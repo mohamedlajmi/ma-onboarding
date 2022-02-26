@@ -125,9 +125,33 @@ def update():
                 listing["seen_at"] = datetime.now()
                 listings.append(listing)
 
-    # logging.error(f"listings: {json.dumps(listings, indent=4)}")
     logging.error(f"listings: {listings}")
 
+    query = """
+                INSERT INTO listings VALUES(
+                    %(listing_id)s,
+                    %(geom)s,
+                    %(price)s,
+                    %(area)s,
+                    %(room_count)s,
+                    %(seen_at)s,
+                )
+        """
+
+    for listing in listings:
+        logging.error(f"insert query: {listing['listing_id']}")
+        db_cursor.execute(
+            query,
+            {
+                "listing_id": listing["listing_id"],
+                "geom": listing["geom"],
+                "price": listing["price"],
+                "area": listing["area"],
+                "room_count": listing["room_count"],
+                "seen_at": listing["seen_at"],
+            },
+        )
+        g.db.commit()
     return
     for geom in GEOMS_IDS:
         p = 0
