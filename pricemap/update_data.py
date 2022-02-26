@@ -3,6 +3,8 @@ import json
 from flask import g, current_app, jsonify
 import requests
 import psycopg2
+import psycopg2.extras
+
 from datetime import datetime
 import logging
 
@@ -137,6 +139,10 @@ def update():
                     %(seen_at)s
                 )
         """
+
+    psycopg2.extras.execute_batch(db_cursor, query, listings)
+
+    return
 
     for listing in listings:
         logging.error(f"insert query: {listing['listing_id']}")
