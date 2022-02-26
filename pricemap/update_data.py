@@ -4,7 +4,7 @@ from flask import g, current_app, jsonify
 import requests
 import psycopg2
 import psycopg2.extras
-
+from parse import parse
 from datetime import datetime
 import logging
 
@@ -61,6 +61,62 @@ def init_database():
         return
 
 
+def extract_listing(item):
+    listing_id = item["listing_id"]
+
+    def to_int(string):
+        return int(string.replace(" ", ""))
+
+    # parse title
+    title_formats = [
+        "Appartement{room_count:to_int}pièces -{area:to_int}m²",
+        "Studio -{area:to_int}m²",
+        "Appartement -{area:to_int}m²",
+    ]
+
+    parse_title_results = (
+        parse(title_format, item["title"], dict(to_int=to_int))
+        for title_format in title_formats
+    )
+
+    title_fields = next(
+        (
+            parse_title_result.named
+            for parse_title_result in parse_title_results
+            if parse_title_result
+        ),
+        {},
+    )
+
+    # extract room count
+    room_count = title_fields.get("room_count")
+
+    # extract area
+    if "area" not in title_fields:
+        logging.error("\nfailed to extract area\n")
+        # raise exception because area is required
+        raise ValueError("area not found")
+    area = title_fields["area"]
+
+    # parse price
+    price_format = "{price:to_int}€"
+    parse_price_result = parse(price_format, item["price"], dict(to_int=to_int))
+    if not parse_price_result:
+        logging.error("\nfailed to extract price\n")
+        # raise exception because price is required
+        raise ValueError("price not found")
+
+    # extract price
+    price = parse_price_result.named["price"]
+
+    return {
+        "listing_id": listing_id,
+        "room_count": room_count,
+        "price": price,
+        "area": area,
+    }
+
+
 def decode_item(item):
 
     # logging.error(f"item: {json.dumps(item)}")
@@ -88,9 +144,6 @@ def decode_item(item):
         logging.error("\nfailed to extract room_count:\n")
         logging.error(f"{json.dumps(item)}")
         room_count = None
-
-    # price
-    # Handle the case 'price': 'Prix non communiqué'
 
     try:
         price = int("".join([s for s in item["price"] if s.isdigit()]))
@@ -147,7 +200,8 @@ def update():
 
             for item in response.json():
                 try:
-                    listing = decode_item(item)
+                    # listing = decode_item(item)
+                    listing = extract_listing(item)
                 except:
                     logging.error(f"invalid listing from api: {json.dumps(item)}")
                     # ignore it
