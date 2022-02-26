@@ -75,12 +75,12 @@ def update():
     listings = []
     for geom_id in geoms_ids:
         logging.error(f"read geom : {geom_id}")
-        page = 1
+        page = 0
         # more_data = True
         while True:
             page += 1
             logging.error(f"read page : {page}")
-            url = f"http://listingapi:5000/listings/{geom}?page={page}"
+            url = f"http://listingapi:5000/listings/{geom_id}?page={page}"
             response = requests.get(url)
 
             # Break when finished
@@ -91,7 +91,7 @@ def update():
             # for item in response.json():
             #   listing = decode_item(item)
             #  listings.append(listing)
-
+    return
     for geom in GEOMS_IDS:
         p = 0
         while True:
