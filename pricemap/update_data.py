@@ -144,7 +144,9 @@ def update():
                 try:
                     listing = decode_item(item)
                 except:
-                    logging.error(f"invalid listing from api: {json.dumps(listing)}")
+                    logging.error(
+                        f"invalid listing from api, listing_id: {item['listing_id']}"
+                    )
                     # ignore it
                     continue
 
