@@ -63,7 +63,7 @@ def init_database():
 
 def decode_item(item):
 
-    logging.error(f"item: {json.dumps(item)}")
+    # logging.error(f"item: {json.dumps(item)}")
 
     # required: listing_id, price, area
     # not required:room_count
