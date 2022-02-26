@@ -8,28 +8,24 @@ import psycopg2.extras
 from datetime import datetime
 import logging
 
-GEOMS_IDS = [
-    32684,
-    32683,
-    32682,
-    32685,
-    32686,
-    32687,
-    32688,
-    32689,
-    32690,
-    32691,
-    32692,
-    32693,
-    32699,
-    32694,
-    32695,
-    32696,
-    32697,
-    32698,
-    32700,
-    32701,
-]
+LISTINGS_API_RESPONSE_SCHEMA = {
+    "type": "array",
+    "items": {
+        "type": "object",
+        "properties": {
+            "listing_id": {
+                "type": "string",
+            },
+            "title": {
+                "type": "string",
+            },
+            "price": {
+                "type": "string",
+            },
+        },
+        "required": ["listing_id", "title", "price"],
+    },
+}
 
 
 def get_geoms_ids():
@@ -77,11 +73,12 @@ def decode_item(item):
         )
     except:
         room_count = 0
-
+        logging.error("\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n")
     try:
         price = int("".join([s for s in item["price"] if s.isdigit()]))
     except:
         price = 0
+        logging.error("\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n")
 
     try:
         area = int(
@@ -89,6 +86,7 @@ def decode_item(item):
         )
     except:
         area = 0
+        logging.error("\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n")
 
     return {
         "listing_id": listing_id,
@@ -122,6 +120,8 @@ def update():
                 logging.error("no more page retrieve next geom")
                 break
 
+            # TODO validate reponse schema here
+
             for item in response.json():
                 listing = decode_item(item)
                 listing["geom"] = geom_id
@@ -147,21 +147,30 @@ def update():
 
     psycopg2.extras.execute_batch(db_cursor, query, listings, page_size=100)
     g.db.commit()
-    return
 
-    query = f"""
-        INSERT INTO listings VALUES(
-            %(listing_id)s,
-            %(geom)s,
-            %(price)s,
-            %(area)s,
-            %(room_count)s,
-            %(first_seen_at)s,
-            %(last_seen_at)s
-        )
-        ON CONFLICT (id) DO UPDATE 
-        SET last_seen_at = %(last_seen_at)s;
-    """
+
+GEOMS_IDS = [
+    32684,
+    32683,
+    32682,
+    32685,
+    32686,
+    32687,
+    32688,
+    32689,
+    32690,
+    32691,
+    32692,
+    32693,
+    32699,
+    32694,
+    32695,
+    32696,
+    32697,
+    32698,
+    32700,
+    32701,
+]
 
 
 def update_old():
