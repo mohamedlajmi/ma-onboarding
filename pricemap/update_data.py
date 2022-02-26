@@ -64,6 +64,7 @@ def init_database():
 def decode_item(item):
     listing_id = item["listing_id"]
 
+    # room_count
     try:
         room_count = (
             1
@@ -74,22 +75,27 @@ def decode_item(item):
         )
     except:
         room_count = 0
-        logging.error(f"item: {item}")
+        logging.error(f"item: {json.dumps(item)}")
         logging.error("\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx room_count\n")
+
+    # price
+    # Handle the case 'price': 'Prix non communiqué'
+
     try:
         price = int("".join([s for s in item["price"] if s.isdigit()]))
     except:
         price = 0
-        logging.error(f"item: {item}")
+        logging.error(f"item: {json.dumps(item)}")
         logging.error("\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx price\n")
 
+    # area
     try:
         area = int(
             item["title"].split("-")[1].replace(" ", "").replace("\u00a0m\u00b2", "")
         )
     except:
         area = 0
-        logging.error(f"item: {item}")
+        logging.error(f"item: {json.dumps(item)}")
         logging.error("\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx area\n")
 
     return {
