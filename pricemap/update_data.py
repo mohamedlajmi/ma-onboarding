@@ -1,10 +1,10 @@
 import json
 
-from flask import g, current_app, jsonify
+from flask import g, current_app
 import requests
 import psycopg2
 import psycopg2.extras
-from parse import parse
+#from parse import parse
 from datetime import datetime
 import logging
 
@@ -175,6 +175,7 @@ def update():
     init_database()
     geoms_ids = get_geoms_ids()
     logging.error(f"geoms_ids: {geoms_ids}")
+    return
 
     db_cursor = g.db.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
