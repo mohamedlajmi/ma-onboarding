@@ -1,3 +1,5 @@
+import json
+
 from flask import g, current_app, jsonify
 import requests
 import psycopg2
@@ -119,8 +121,12 @@ def update():
 
             for item in response.json():
                 listing = decode_item(item)
+                listing["geom"] = geom_id
+                listing["seen_at"] = datetime.now()
                 listings.append(listing)
-    logging.error(f"listings: {listings}")
+
+    logging.error(f"listings: {json.dumps(listings, indent=4)}")
+
     return
     for geom in GEOMS_IDS:
         p = 0
