@@ -125,7 +125,8 @@ def update():
                 listing["seen_at"] = datetime.now()
                 listings.append(listing)
 
-    logging.error(f"listings: {json.dumps(listings, indent=4)}")
+    # logging.error(f"listings: {json.dumps(listings, indent=4)}")
+    logging.error(f"listings: {listings}")
 
     return
     for geom in GEOMS_IDS:
