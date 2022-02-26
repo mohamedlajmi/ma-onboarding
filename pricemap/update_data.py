@@ -134,7 +134,7 @@ def update():
                     %(price)s,
                     %(area)s,
                     %(room_count)s,
-                    %(seen_at)s,
+                    %(seen_at)s
                 )
         """
 
