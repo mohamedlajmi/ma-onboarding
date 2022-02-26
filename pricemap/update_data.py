@@ -64,7 +64,6 @@ def init_database():
 def decode_item(item):
     listing_id = item["listing_id"]
 
-    logging.error(f"item: {item}")
     try:
         room_count = (
             1
@@ -75,11 +74,13 @@ def decode_item(item):
         )
     except:
         room_count = 0
+        logging.error(f"item: {item}")
         logging.error("\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx room_count\n")
     try:
         price = int("".join([s for s in item["price"] if s.isdigit()]))
     except:
         price = 0
+        logging.error(f"item: {item}")
         logging.error("\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx price\n")
 
     try:
@@ -88,6 +89,7 @@ def decode_item(item):
         )
     except:
         area = 0
+        logging.error(f"item: {item}")
         logging.error("\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx area\n")
 
     return {
@@ -131,7 +133,7 @@ def update():
                 listing["last_seen_at"] = datetime.now()
                 listings.append(listing)
 
-    logging.error(f"listings: {listings}")
+    # logging.error(f"listings: {listings}")
 
     query = """
                 INSERT INTO listings VALUES(
