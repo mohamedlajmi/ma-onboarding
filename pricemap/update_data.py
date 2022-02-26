@@ -41,13 +41,13 @@ def get_geoms_ids():
 def init_database():
     sql = """
         CREATE TABLE IF NOT EXISTS listings (
-            id INTEGER,
-            place_id INTEGER,
-            price INTEGER,
-            area INTEGER,
+            id INTEGER NOT NULL,
+            place_id INTEGER  NOT NULL,
+            price INTEGER  NOT NULL,
+            area INTEGER  NOT NULL,
             room_count INTEGER,
-            first_seen_at TIMESTAMP,
-            last_seen_at TIMESTAMP,
+            first_seen_at TIMESTAMP  NOT NULL,
+            last_seen_at TIMESTAMP  NOT NULL,
             PRIMARY KEY (id)
         );
     """
@@ -62,8 +62,16 @@ def init_database():
 
 
 def decode_item(item):
-    listing_id = item["listing_id"]
+
     logging.error(f"item: {json.dumps(item)}")
+
+    # required: listing_id, price, area
+    # not required:room_count
+
+    # title format: "Appartement 3 pièces - 73 m²"
+    # title format: "Studio - 16 m²"
+
+    listing_id = item["listing_id"]
 
     # room_count
     try:
@@ -75,8 +83,8 @@ def decode_item(item):
             )
         )
     except:
-        room_count = 0
-        logging.error("\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx room_count\n")
+        logging.error("\nfailed to extract room_count\n")
+        room_count = None
 
     # price
     # Handle the case 'price': 'Prix non communiqué'
@@ -84,8 +92,9 @@ def decode_item(item):
     try:
         price = int("".join([s for s in item["price"] if s.isdigit()]))
     except:
-        price = 0
-        logging.error("\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx price\n")
+        logging.error("\nfailed to extract price\n")
+        # raise exception because price is required
+        raise ValueError("price not found")
 
     # area
     try:
@@ -93,8 +102,9 @@ def decode_item(item):
             item["title"].split("-")[1].replace(" ", "").replace("\u00a0m\u00b2", "")
         )
     except:
-        area = 0
-        logging.error("\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx area\n")
+        logging.error("\nfailed to extract area\n")
+        # raise exception because area is required
+        raise ValueError("area not found")
 
     return {
         "listing_id": listing_id,
@@ -131,7 +141,13 @@ def update():
             # TODO validate reponse schema here
 
             for item in response.json():
-                listing = decode_item(item)
+                try:
+                    listing = decode_item(item)
+                except:
+                    logging.error(f"invalid listing from api: {json.dumps(listing)}")
+                    # ignore it
+                    continue
+
                 listing["geom"] = geom_id
                 listing["first_seen_at"] = datetime.now()
                 listing["last_seen_at"] = datetime.now()
