@@ -140,7 +140,7 @@ def update():
                 )
         """
 
-    psycopg2.extras.execute_batch(db_cursor, query, listings)
+    psycopg2.extras.execute_batch(db_cursor, query, listings, page_size=100)
 
     return
 
