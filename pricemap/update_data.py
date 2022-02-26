@@ -71,6 +71,8 @@ def decode_item(item):
     # title format: "Appartement 3 pièces - 73 m²"
     # title format: "Studio - 16 m²"
 
+    # price format: "2 150 000 €"
+
     listing_id = item["listing_id"]
 
     # room_count
@@ -83,7 +85,8 @@ def decode_item(item):
             )
         )
     except:
-        logging.error("\nfailed to extract room_count\n")
+        logging.error("\nfailed to extract room_count:\n")
+        logging.error(f"{item}")
         room_count = None
 
     # price
@@ -122,6 +125,8 @@ def update():
 
     db_cursor = g.db.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
+    update_time = datetime.now()
+
     listings = []
     for geom_id in geoms_ids:
         logging.error(f"read geom : {geom_id}")
@@ -149,28 +154,29 @@ def update():
                     continue
 
                 listing["geom"] = geom_id
-                listing["first_seen_at"] = datetime.now()
-                listing["last_seen_at"] = datetime.now()
+                listing["first_seen_at"] = update_time
+                listing["last_seen_at"] = update_time
                 listings.append(listing)
 
     # logging.error(f"listings: {listings}")
 
-    query = """
-                INSERT INTO listings VALUES(
-                    %(listing_id)s,
-                    %(geom)s,
-                    %(price)s,
-                    %(area)s,
-                    %(room_count)s,
-                    %(first_seen_at)s,
-                    %(last_seen_at)s
-                )
-                ON CONFLICT (id) DO UPDATE
-                SET last_seen_at = %(last_seen_at)s
-        """
+    if listings:
+        query = """
+                    INSERT INTO listings VALUES(
+                        %(listing_id)s,
+                        %(geom)s,
+                        %(price)s,
+                        %(area)s,
+                        %(room_count)s,
+                        %(first_seen_at)s,
+                        %(last_seen_at)s
+                    )
+                    ON CONFLICT (id) DO UPDATE
+                    SET last_seen_at = %(last_seen_at)s
+            """
 
-    psycopg2.extras.execute_batch(db_cursor, query, listings, page_size=100)
-    g.db.commit()
+        psycopg2.extras.execute_batch(db_cursor, query, listings, page_size=100)
+        g.db.commit()
 
 
 GEOMS_IDS = [
