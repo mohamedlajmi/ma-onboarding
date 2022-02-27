@@ -215,9 +215,10 @@ def update():
                 listing["last_seen_at"] = update_time
                 listings.append(listing)
 
-    # logging.error(f"listings: {listings}")
+    logging.error(f"listings: {listings}")
 
     if listings:
+        logging.error("update database")
         query = """
                     INSERT INTO listings VALUES(
                         %(listing_id)s,
