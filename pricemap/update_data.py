@@ -70,7 +70,7 @@ def extract_listing(item):
 
     # parse title
     title_formats = [
-        "Appartement{room_count:to_int}pièces-{area:d}m²",
+        "Appartement{room_count:d}pièces-{area:d}m²",
         "Studio-{area:d}m²",
         "Appartement-{area:d}m²",
     ]
