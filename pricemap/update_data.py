@@ -65,17 +65,18 @@ def extract_listing(item):
     listing_id = item["listing_id"]
 
     def to_int(string):
-        return int(string.replace(" ", ""))
+        # return int(string.replace(" ", ""))
+        return int(string)
 
     # parse title
     title_formats = [
-        "Appartement{room_count:to_int}pièces -{area:to_int}m²",
-        "Studio -{area:to_int}m²",
-        "Appartement -{area:to_int}m²",
+        "Appartement{room_count:to_int}pièces-{area:to_int}m²",
+        "Studio-{area:to_int}m²",
+        "Appartement-{area:to_int}m²",
     ]
 
     parse_title_results = (
-        parse(title_format, item["title"], dict(to_int=to_int))
+        parse(title_format, re.sub(r"\s", "", item["title"]), dict(to_int=to_int))
         for title_format in title_formats
     )
 
@@ -100,6 +101,7 @@ def extract_listing(item):
 
     # parse price
     price_format = "{price:to_int}€"
+    # remove the special Narrow No-Break Space
     parse_price_result = parse(
         price_format, re.sub(r"\s", "", item["price"]), dict(to_int=to_int)
     )
