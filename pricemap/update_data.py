@@ -1,5 +1,5 @@
 import json
-
+import re
 from flask import g, current_app
 import requests
 import psycopg2
@@ -75,7 +75,7 @@ def extract_listing(item):
     ]
 
     parse_title_results = (
-        parse(title_format, str(item["title"]), dict(to_int=to_int))
+        parse(title_format, item["title"], dict(to_int=to_int))
         for title_format in title_formats
     )
 
@@ -100,7 +100,9 @@ def extract_listing(item):
 
     # parse price
     price_format = "{price:to_int}€"
-    parse_price_result = parse(price_format, str(item["price"]), dict(to_int=to_int))
+    parse_price_result = parse(
+        price_format, re.sub(r"\s", "", item["price"]), dict(to_int=to_int)
+    )
     if not parse_price_result:
         logging.error("\nfailed to extract price\n")
         # raise exception because price is required
