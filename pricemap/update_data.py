@@ -202,8 +202,9 @@ def update():
                 try:
                     # listing = decode_item(item)
                     listing = extract_listing(item)
-                except:
+                except Exception as err:
                     logging.error(f"invalid listing from api: {json.dumps(item)}")
+                    logging.error(f"err: {err}")
                     # ignore it
                     continue
 
