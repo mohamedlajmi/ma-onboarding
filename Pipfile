@@ -2,6 +2,7 @@
 Flask = "*"
 psycopg2-binary = "*"
 requests = "*"
+parse =  "*"
 
 [requires]
 python_version = "3.8"
