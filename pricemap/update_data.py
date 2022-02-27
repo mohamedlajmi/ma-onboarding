@@ -70,13 +70,14 @@ def extract_listing(item):
 
     # parse title
     title_formats = [
-        "Appartement{room_count:to_int}pièces-{area:to_int}m²",
-        "Studio-{area:to_int}m²",
-        "Appartement-{area:to_int}m²",
+        "Appartement{room_count:to_int}pièces-{area:d}m²",
+        "Studio-{area:d}m²",
+        "Appartement-{area:d}m²",
     ]
 
     parse_title_results = (
-        parse(title_format, re.sub(r"\s", "", item["title"]), dict(to_int=to_int))
+        # parse(title_format, re.sub(r"\s", "", item["title"]), dict(to_int=to_int))
+        parse(title_format, re.sub(r"\s", "", item["title"]))
         for title_format in title_formats
     )
 
