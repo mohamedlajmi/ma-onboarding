@@ -1,12 +1,17 @@
 import json
+import logging
 import re
-from flask import g, current_app
-import requests
+from datetime import datetime
+
+from flask import g
+
 import psycopg2
 import psycopg2.extras
+
 from parse import parse
-from datetime import datetime
-import logging
+
+import requests
+
 
 LISTINGS_API_RESPONSE_SCHEMA = {
     "type": "array",
@@ -28,7 +33,7 @@ LISTINGS_API_RESPONSE_SCHEMA = {
 }
 
 
-def get_geoms_ids():
+def get_palaces_ids():
     query = "select id from geo_place"
     cursor = g.db.cursor(cursor_factory=psycopg2.extras.DictCursor)
     cursor.execute(query)
@@ -64,10 +69,6 @@ def init_database():
 def extract_listing(item):
     listing_id = item["listing_id"]
 
-    def to_int(string):
-        # return int(string.replace(" ", ""))
-        return int(string)
-
     # parse title
     title_formats = [
         "Appartement{room_count:d}pièces-{area:d}m²",
@@ -76,7 +77,6 @@ def extract_listing(item):
     ]
 
     parse_title_results = (
-        # parse(title_format, re.sub(r"\s", "", item["title"]), dict(to_int=to_int))
         parse(title_format, re.sub(r"\s", "", item["title"]))
         for title_format in title_formats
     )
@@ -95,23 +95,19 @@ def extract_listing(item):
 
     # extract area
     if "area" not in title_fields:
-        logging.error("\nfailed to extract area\n")
+        logging.error("failed to extract area")
         # raise exception because area is required
         raise ValueError("area not found")
     area = title_fields["area"]
 
-    # parse price
-    price_format = "{price:to_int}€"
+    # extratc price
+    price_format = "{price:d}€"
     # remove the special Narrow No-Break Space
-    parse_price_result = parse(
-        price_format, re.sub(r"\s", "", item["price"]), dict(to_int=to_int)
-    )
+    parse_price_result = parse(price_format, re.sub(r"\s", "", item["price"]))
     if not parse_price_result:
-        logging.error("\nfailed to extract price\n")
+        logging.error("failed to extract price")
         # raise exception because price is required
         raise ValueError("price not found")
-
-    # extract price
     price = parse_price_result.named["price"]
 
     return {
@@ -122,98 +118,47 @@ def extract_listing(item):
     }
 
 
-def decode_item(item):
-
-    # logging.error(f"item: {json.dumps(item)}")
-
-    # required: listing_id, price, area
-    # not required:room_count
-
-    # title format: "Appartement 3 pièces - 73 m²"
-    # title format: "Studio - 16 m²"
-
-    # price format: "2 150 000 €"
-
-    listing_id = item["listing_id"]
-
-    # room_count
-    try:
-        room_count = (
-            1
-            if "Studio" in item["title"]
-            else int(
-                "".join([s for s in item["title"].split("pièces")[0] if s.isdigit()])
-            )
-        )
-    except:
-        logging.error("\nfailed to extract room_count:\n")
-        logging.error(f"{json.dumps(item)}")
-        room_count = None
-
-    try:
-        price = int("".join([s for s in item["price"] if s.isdigit()]))
-    except:
-        logging.error("\nfailed to extract price\n")
-        # raise exception because price is required
-        raise ValueError("price not found")
-
-    # area
-    try:
-        area = int(
-            item["title"].split("-")[1].replace(" ", "").replace("\u00a0m\u00b2", "")
-        )
-    except:
-        logging.error("\nfailed to extract area\n")
-        # raise exception because area is required
-        raise ValueError("area not found")
-
-    return {
-        "listing_id": listing_id,
-        "room_count": room_count,
-        "price": price,
-        "area": area,
-    }
-
-
 def update():
-    # init database
-    init_database()
-    geoms_ids = get_geoms_ids()
-    logging.error(f"geoms_ids: {geoms_ids}")
-
-    db_cursor = g.db.cursor(cursor_factory=psycopg2.extras.DictCursor)
-
     update_time = datetime.now()
 
+    logging.error(f"update listings: {update_time}")
+    # init database
+    init_database()
+    places_ids = get_palaces_ids()
+    logging.error(f"places to collect: {places_ids}")
+
     listings = []
-    for geom_id in geoms_ids:
-        logging.error(f"read geom : {geom_id}")
+    for place_id in places_ids:
+        logging.error(f"read place : {place_id}")
         page = 0
-        # more_data = True
         while True:
             page += 1
             logging.error(f"read page : {page}")
-            url = f"http://listingapi:5000/listings/{geom_id}?page={page}"
+            url = f"http://listingapi:5000/listings/{place_id}?page={page}"
             response = requests.get(url)
 
-            # Break when finished
             if response.status_code == 416:
-                logging.error("no more page retrieve next geom")
+                logging.error("no more page retrieve next place")
+                break
+            elif response.status_code != 200:
+                logging.error(
+                    f" listing api failed, http status : {response.status_code}"
+                )
                 break
 
             # TODO validate reponse schema here
 
             for item in response.json():
                 try:
-                    # listing = decode_item(item)
                     listing = extract_listing(item)
                 except Exception as err:
-                    logging.error(f"invalid listing from api: {json.dumps(item)}")
-                    logging.error(f"err: {err}")
-                    # ignore it
+                    logging.error(
+                        f"invalid listing from api: {json.dumps(item)}, error: {err}"
+                    )
+                    # ignore invalid listing it and continue
                     continue
 
-                listing["geom"] = geom_id
+                listing["place_id"] = place_id
                 listing["first_seen_at"] = update_time
                 listing["last_seen_at"] = update_time
                 listings.append(listing)
@@ -225,7 +170,7 @@ def update():
         query = """
                     INSERT INTO listings VALUES(
                         %(listing_id)s,
-                        %(geom)s,
+                        %(place_id)s,
                         %(price)s,
                         %(area)s,
                         %(room_count)s,
@@ -236,8 +181,10 @@ def update():
                     SET last_seen_at = %(last_seen_at)s
             """
 
+        db_cursor = g.db.cursor(cursor_factory=psycopg2.extras.DictCursor)
         psycopg2.extras.execute_batch(db_cursor, query, listings, page_size=100)
         g.db.commit()
+        logging.error(f"listings updated successfully")
 
 
 GEOMS_IDS = [
