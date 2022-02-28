@@ -171,6 +171,9 @@ def update():
                 listings.append(listing)
 
             if len(items) < LISTINGS_API_PAGE_SIZE:
+                logging.error(
+                    f"\nitems_nbr_per_place {place_id} : {items_nbr_per_place}\n"
+                )
                 logging.error("no more page retrieve next place")
                 break
 
