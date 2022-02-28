@@ -131,17 +131,15 @@ def update():
     listings = []
     for place_id in places_ids:
         logging.error(f"read place : {place_id}")
-        page = 0
 
         items_nbr_per_place = 0
-        while True:
-            page += 1
+        for page in range(0, 2000):
             logging.error(f"read page : {page}")
             url = f"http://listingapi:5000/listings/{place_id}?page={page}"
             response = requests.get(url)
 
             if response.status_code == 416:
-                logging.error("no more page retrieve next place: status code = 416")
+                logging.error("no more page retrieve next place")
                 logging.error(f"items_nbr_per_place {place_id} : {items_nbr_per_place}")
                 break
             elif response.status_code != 200:
