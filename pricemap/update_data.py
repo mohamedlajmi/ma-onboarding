@@ -163,7 +163,7 @@ def update():
                 listing["last_seen_at"] = update_time
                 listings.append(listing)
 
-    logging.debuf(f"listings: {listings}")
+    # logging.debug(f"listings: {listings}")
 
     if listings:
         logging.error("update database")
