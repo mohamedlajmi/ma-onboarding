@@ -12,6 +12,7 @@ from parse import parse
 
 import requests
 
+LISTINGS_API_PAGE_SIZE = 20
 
 LISTINGS_API_RESPONSE_SCHEMA = {
     "type": "array",
@@ -140,7 +141,7 @@ def update():
             response = requests.get(url)
 
             if response.status_code == 416:
-                logging.error("no more page retrieve next place")
+                logging.error("no more page retrieve next place: status code = 416")
                 logging.error(f"items_nbr_per_place {place_id} : {items_nbr_per_place}")
                 break
             elif response.status_code != 200:
@@ -168,6 +169,10 @@ def update():
                 listing["first_seen_at"] = update_time
                 listing["last_seen_at"] = update_time
                 listings.append(listing)
+
+            if len(items) < LISTINGS_API_PAGE_SIZE:
+                logging.error("no more page retrieve next place")
+                break
 
     if listings:
         logging.error("update database")
