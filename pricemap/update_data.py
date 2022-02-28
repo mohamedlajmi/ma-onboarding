@@ -131,6 +131,8 @@ def update():
     for place_id in places_ids:
         logging.error(f"read place : {place_id}")
         page = 0
+
+        items_nbr_per_place = 0
         while True:
             page += 1
             logging.error(f"read page : {page}")
@@ -139,16 +141,20 @@ def update():
 
             if response.status_code == 416:
                 logging.error("no more page retrieve next place")
+                logging.error(f"items_nbr_per_place {place_id} : {items_nbr_per_place}")
                 break
             elif response.status_code != 200:
+
                 logging.error(
                     f" listing api failed, http status : {response.status_code}"
                 )
                 break
 
             # TODO validate reponse schema here
-
-            for item in response.json():
+            items = response.json()
+            logging.error(f"number of items: {len(items)}")
+            items_nbr_per_place += len(items)
+            for item in items:
                 try:
                     listing = extract_listing(item)
                 except Exception as err:
