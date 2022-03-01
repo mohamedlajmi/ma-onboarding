@@ -28,10 +28,10 @@ def geoms():
     cursor.execute(SQL)
 
     rows = [row for row in cursor]
-    logging.error(f"rows from db: {rows}")
 
     geoms = {"type": "FeatureCollection", "features": []}
     for row in cursor:
+        logging.error(f"\nrow from db: {json.dumps(row, indent=4)}\n")
         if not row[0]:
             continue
         geometry = {
