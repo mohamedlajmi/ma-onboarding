@@ -13,8 +13,8 @@ from parse import parse
 
 import requests
 
+LISTINGS_API_URL = "http://listingapi:5000/listings"
 LISTINGS_API_PAGE_SIZE = 20
-
 LISTINGS_API_RESPONSE_SCHEMA = {
     "type": "array",
     "items": {
@@ -40,6 +40,8 @@ def get_palaces_ids():
     cursor = g.db.cursor(cursor_factory=psycopg2.extras.DictCursor)
     cursor.execute(query)
     rows = cursor.fetchall()
+    logging.error(f"rows: {rows}")
+
     geoms_ids = [row[0] for row in rows]
     g.db.commit()
     return geoms_ids
@@ -128,6 +130,7 @@ def update():
     init_database()
     places_ids = get_palaces_ids()
     logging.error(f"places to collect: {places_ids}")
+    return
 
     listings = []
     for place_id in places_ids:
@@ -135,10 +138,14 @@ def update():
 
         items_nbr_per_place = 0
         for page in count():
-            logging.error(f"read page : {page}")
-            url = f"http://listingapi:5000/listings/{place_id}?page={page}"
-            response = requests.get(url)
+            logging.error(f"read page: {page}")
+            url = f"{LISTINGS_API_URL}/{place_id}?page={page}"
 
+            try:
+                response = requests.get(url)
+            except Exception as err:
+                logging.error(f"listing api failed, error: {err}")
+                # TODO handle this exception
             if response.status_code == 416:
                 logging.error("no more page retrieve next place")
                 logging.error(f"items_nbr_per_place {place_id} : {items_nbr_per_place}")
@@ -146,7 +153,7 @@ def update():
             elif response.status_code != 200:
 
                 logging.error(
-                    f" listing api failed, http status : {response.status_code}"
+                    f"listing api failed, http status : {response.status_code}"
                 )
                 break
 
