@@ -2,8 +2,9 @@ import json
 import logging
 import re
 from datetime import datetime
-
 from flask import g
+from itertools import count
+
 
 import psycopg2
 import psycopg2.extras
@@ -133,7 +134,7 @@ def update():
         logging.error(f"read place : {place_id}")
 
         items_nbr_per_place = 0
-        for page in range(0, 2000):
+        for page in count():
             logging.error(f"read page : {page}")
             url = f"http://listingapi:5000/listings/{place_id}?page={page}"
             response = requests.get(url)
