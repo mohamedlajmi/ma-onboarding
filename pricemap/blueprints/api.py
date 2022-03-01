@@ -27,7 +27,8 @@ def geoms():
     cursor = g.db.cursor(cursor_factory=psycopg2.extras.DictCursor)
     cursor.execute(SQL)
 
-    logging.error("rows: {[row for row in cursor]}")
+    rows = [row for row in cursor]
+    logging.error(f"rows from db: {rows}")
 
     geoms = {"type": "FeatureCollection", "features": []}
     for row in cursor:
