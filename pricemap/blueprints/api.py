@@ -7,6 +7,7 @@ from flask import Blueprint, jsonify, g
 
 import psycopg2.extras
 import json
+import logging
 
 api = Blueprint("api", __name__)
 
@@ -25,6 +26,8 @@ def geoms():
             ;"""
     cursor = g.db.cursor(cursor_factory=psycopg2.extras.DictCursor)
     cursor.execute(SQL)
+
+    logging.error("rows: {[row for row in cursor]}")
 
     geoms = {"type": "FeatureCollection", "features": []}
     for row in cursor:
