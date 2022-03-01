@@ -29,7 +29,7 @@ def geoms():
 
     geoms = {"type": "FeatureCollection", "features": []}
     for row in cursor:
-        logging.error(f"\nrow from db: {json.dumps(row, indent=4)}\n")
+        logging.error(f"row from db: {row}")
         if not row[0]:
             continue
         geometry = {
