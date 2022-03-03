@@ -81,19 +81,19 @@ def get_price(cog):
 
     query = " \nUNION ".join(
         [
-            f"(select 0 as range, COUNT(price) AS count FROM listings WHERE price/area < {RANGES[0][0]})",
+            f"(select 0 as range, COUNT(price) AS count FROM listings where place_id=%(place_id)s and price/area < {RANGES[0][0]})",
             *[
-                f"(select {range_number+1} as range, COUNT(price) AS count FROM listings WHERE price/area BETWEEN {start_range} AND {end_range})"
+                f"(select {range_number+1} as range, COUNT(price) AS count FROM listings where place_id=%(place_id)s and price/area BETWEEN {start_range} AND {end_range})"
                 for range_number, (start_range, end_range) in enumerate(RANGES)
             ],
-            f"(select {len(RANGES)+1} as range, COUNT(price) AS count FROM listings WHERE price/area > {RANGES[-1][1]})",
+            f"(select {len(RANGES)+1} as range, COUNT(price) AS count FROM listings where place_id=%(place_id)s and price/area > {RANGES[-1][1]})",
         ]
     )
 
     logging.error(f"query:{query}")
 
     cursor = g.db.cursor(cursor_factory=psycopg2.extras.DictCursor)
-    cursor.execute(query)
+    cursor.execute(query, {"place_id": place_id})
     rows = cursor.fetchall()
     for row in rows:
         logging.error("---->")
