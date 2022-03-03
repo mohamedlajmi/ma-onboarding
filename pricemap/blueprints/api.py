@@ -64,6 +64,13 @@ def get_price(cog):
     """
     # new implementation
     logging.error(f"get_price:{cog}")
+    # TODO check if exists
+
+    query = "select exists(select 1 from geo_place where cog=%(cog)s)"
+    cursor = g.db.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    cursor.execute(query, {"cog": cog})
+    place = cursor.fetchone()
+    logging.error(f"--->place:{place}, {dict(place)}")
 
     RANGES = [(6000, 8000), (8000, 10000), (10000, 14000)]
 
