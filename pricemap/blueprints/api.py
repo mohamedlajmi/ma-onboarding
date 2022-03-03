@@ -71,10 +71,11 @@ def get_price(cog):
     cursor.execute(query, {"cog": cog})
     geo_place = cursor.fetchone()
     logging.error(f"geo_place:{geo_place}")
-    return
-    if geo_place["exists"] == False:
+    if geo_place is None:
         logging.error(f"place:{cog} not found")
         return make_response("place not found", 404)
+    place_id = geo_place["id"]
+    logging.error(f"place_id:{place_id}")
 
     RANGES = [(6000, 8000), (8000, 10000), (10000, 14000)]
 
