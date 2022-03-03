@@ -4,6 +4,7 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 from flask import Blueprint, jsonify, g
+import operator
 
 import psycopg2.extras
 import json
@@ -87,10 +88,12 @@ def get_price(cog):
         logging.error(f"row:{row}")
         logging.error(f"rowdict:{dict(row)}")
 
+    volumes = [row["count"] for row in sorted(rows, key=operator.itemgetter("range"))]
+
     labels = [
-        f"< {RANGES[0][0]} $",
-        *[f"{start_range}-{end_range} $" for start_range, end_range in RANGES],
-        f"{RANGES[-1][1]} $ >",
+        f"< {RANGES[0][0]} €",
+        *[f"{start_range}-{end_range} €" for start_range, end_range in RANGES],
+        f"{RANGES[-1][1]} € >",
     ]
 
     logging.error(f"labels:{labels}")
@@ -99,7 +102,7 @@ def get_price(cog):
 
     response = {
         "serie_name": serie_name,
-        "volumes": [],
+        "volumes": volumes,
         "labels": labels,
     }
 
@@ -143,5 +146,3 @@ def get_price(cog):
     }
     response = {}
     return jsonify(response)
-
-
