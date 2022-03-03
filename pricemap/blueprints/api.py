@@ -3,7 +3,7 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from flask import Blueprint, jsonify, g
+from flask import Blueprint, jsonify, g, make_response
 import operator
 
 import psycopg2.extras
@@ -69,9 +69,10 @@ def get_price(cog):
     query = "select exists(select 1 from geo_place where cog=%(cog)s)"
     cursor = g.db.cursor(cursor_factory=psycopg2.extras.DictCursor)
     cursor.execute(query, {"cog": cog})
-    place = cursor.fetchone()
-    logging.error(f"--->place:{place}, {dict(place)}")
-
+    query_result = cursor.fetchone()
+    if query_result["exists"] == False:
+        logging.error(f"place:{cog} not found")
+        make_response("not found", 404)
     RANGES = [(6000, 8000), (8000, 10000), (10000, 14000)]
 
     query = " \nUNION ".join(
