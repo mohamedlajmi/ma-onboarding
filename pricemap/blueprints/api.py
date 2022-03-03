@@ -72,7 +72,7 @@ def get_price(cog):
     query_result = cursor.fetchone()
     if query_result["exists"] == False:
         logging.error(f"place:{cog} not found")
-        make_response("not found", 404)
+        return make_response("place not found", 404)
     RANGES = [(6000, 8000), (8000, 10000), (10000, 14000)]
 
     query = " \nUNION ".join(
