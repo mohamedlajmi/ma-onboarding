@@ -10,6 +10,7 @@ import psycopg2.extras
 
 api = Blueprint("api", __name__)
 
+
 @api.route("/geoms")
 def geoms():
 
@@ -23,8 +24,8 @@ def geoms():
             group by (cog, geom)
             ;"""
 
-    cursor = g.db.cursor(cursor_factory=psycopg2.extras.DictCursor)
-    cursor.execute(SQL)
+    # cursor = g.db.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    g.db_cursor.execute(SQL)
 
     response = {
         "type": "FeatureCollection",
@@ -34,7 +35,7 @@ def geoms():
                 "geometry": json.loads(row["geom"]),
                 "properties": {"cog": row["cog"], "price": row["price"]},
             }
-            for row in cursor
+            for row in g.db_cursor
             if row[0]
         ],
     }
@@ -54,9 +55,9 @@ def get_price(cog):
     RANGES = [(6000, 8000), (8000, 10000), (10000, 14000)]
 
     query = "select id from geo_place where cog=%(cog)s"
-    cursor = g.db.cursor(cursor_factory=psycopg2.extras.DictCursor)
-    cursor.execute(query, {"cog": cog})
-    geo_place = cursor.fetchone()
+    # cursor = g.db.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    g.db_cursor.execute(query, {"cog": cog})
+    geo_place = g.db_cursor.fetchone()
     logging.error(f"geo_place:{geo_place}")
     if geo_place is None:
         logging.error(f"place:{cog} not found")
@@ -77,9 +78,9 @@ def get_price(cog):
 
     logging.error(f"query: {query}")
 
-    cursor = g.db.cursor(cursor_factory=psycopg2.extras.DictCursor)
-    cursor.execute(query, {"place_id": place_id})
-    rows = cursor.fetchall()
+    # cursor = g.db.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    g.db_cursor.execute(query, {"place_id": place_id})
+    rows = g.db_cursor.fetchall()
 
     volumes = [row["count"] for row in sorted(rows, key=operator.itemgetter("range"))]
 
