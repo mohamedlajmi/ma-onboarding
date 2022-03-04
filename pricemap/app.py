@@ -1,9 +1,10 @@
-from flask import Flask, g, render_template
-import psycopg2
 import logging
 
-from pricemap.blueprints.api import api
+from flask import Flask, g, render_template
 
+import psycopg2
+
+from pricemap.blueprints.api import api
 from pricemap.update_data import update
 
 app = Flask(__name__)
@@ -28,6 +29,7 @@ def before_request():
         app._request_counter = 0
     app._request_counter += 1
     g.db = app.db
+    g.db_cursor = g.db.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
 
 @app.route("/")
