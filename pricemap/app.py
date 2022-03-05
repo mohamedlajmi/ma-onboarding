@@ -37,6 +37,11 @@ def index():
     return render_template("index.html")
 
 
+@app.teardown_request
+def teardown_request(error=None):
+    logging.error("teardown_request")
+
+
 @app.route("/update_data")
 def update_data():
     """Update the data."""
