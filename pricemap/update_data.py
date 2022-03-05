@@ -2,8 +2,9 @@ import json
 import logging
 import re
 from datetime import datetime
-from flask import g
 from itertools import count
+
+from flask import g
 
 from parse import parse
 
@@ -37,12 +38,10 @@ LISTINGS_API_RESPONSE_SCHEMA = {
 
 def get_palaces_ids():
     query = "select id from geo_place"
-    # cursor =  g.db.cursor(cursor_factory=psycopg2.extras.DictCursor)
     g.db_cursor.execute(query)
-    rows = g.db_cursor.fetchall()
-    logging.error(f"get_palaces_ids: rows: {rows}")
-
-    geoms_ids = [row["id"] for row in rows]
+    geo_places = g.db_cursor.fetchall()
+    logging.error(f"geo_places: {geo_places}")
+    geoms_ids = [geo_place["id"] for geo_place in geo_places]
     return geoms_ids
 
 
@@ -60,7 +59,6 @@ def init_database():
         );
     """
 
-    # cursor = g.db_cursor(cursor_factory=psycopg2.extras.DictCursor)
     try:
         g.db_cursor.execute(sql)
         g.db.commit()
@@ -137,9 +135,9 @@ def update():
     for place_id in places_ids:
         logging.error(f"read place: {place_id}")
 
-        items_nbr_per_place = 0
         for page in count():
             logging.error(f"read page: {page} of {place_id}")
+
             url = f"{LISTINGS_API_URL}/{place_id}?page={page}"
 
             try:
@@ -149,7 +147,6 @@ def update():
                 # TODO handle this exception
             if response.status_code == 416:
                 logging.error("no more page retrieve next place")
-                logging.error(f"items_nbr_per_place {place_id} : {items_nbr_per_place}")
                 break
             elif response.status_code != 200:
                 logging.error(
@@ -160,7 +157,6 @@ def update():
             # TODO validate reponse schema here
             items = response.json()
             logging.error(f"number of items: {len(items)}")
-            items_nbr_per_place += len(items)
             for item in items:
                 try:
                     listing = extract_listing(item)
@@ -177,9 +173,6 @@ def update():
                 listings.append(listing)
 
             if len(items) < LISTINGS_API_PAGE_SIZE:
-                logging.error(
-                    f"\nitems_nbr_per_place {place_id} : {items_nbr_per_place}\n"
-                )
                 logging.error("no more page retrieve next place")
                 break
 
@@ -199,7 +192,6 @@ def update():
                     SET last_seen_at = %(last_seen_at)s
             """
 
-        # db_cursor = g.db_cursor(cursor_factory=psycopg2.extras.DictCursor)
         psycopg2.extras.execute_batch(g.db_cursor, query, listings, page_size=100)
         g.db.commit()
         logging.error(f"listings updated successfully")

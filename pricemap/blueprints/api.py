@@ -6,15 +6,15 @@ import operator
 
 from flask import Blueprint, jsonify, g, make_response
 
-import psycopg2.extras
-
 api = Blueprint("api", __name__)
 
 
 @api.route("/geoms")
 def geoms():
 
-    SQL = """
+    logging.error(f"geoms")
+
+    query = """
             SELECT
                 ST_ASGEOJSON(geom) as geom,
                 cog,
@@ -22,10 +22,11 @@ def geoms():
             FROM geo_place
             JOIN listings ON geo_place.id = listings.place_id
             group by (cog, geom)
-            ;"""
+            ;
+        """
 
-    # cursor = g.db.cursor(cursor_factory=psycopg2.extras.DictCursor)
-    g.db_cursor.execute(SQL)
+    g.db_cursor.execute(query)
+    rows = g.db_cursor.fetchall()
 
     response = {
         "type": "FeatureCollection",
@@ -35,7 +36,7 @@ def geoms():
                 "geometry": json.loads(row["geom"]),
                 "properties": {"cog": row["cog"], "price": row["price"]},
             }
-            for row in g.db_cursor
+            for row in rows
             if row[0]
         ],
     }
@@ -55,7 +56,6 @@ def get_price(cog):
     RANGES = [(6000, 8000), (8000, 10000), (10000, 14000)]
 
     query = "select id from geo_place where cog=%(cog)s"
-    # cursor = g.db.cursor(cursor_factory=psycopg2.extras.DictCursor)
     g.db_cursor.execute(query, {"cog": cog})
     geo_place = g.db_cursor.fetchone()
     logging.error(f"geo_place:{geo_place}")
@@ -78,7 +78,6 @@ def get_price(cog):
 
     logging.error(f"query: {query}")
 
-    # cursor = g.db.cursor(cursor_factory=psycopg2.extras.DictCursor)
     g.db_cursor.execute(query, {"place_id": place_id})
     rows = g.db_cursor.fetchall()
 
