@@ -6,6 +6,8 @@ from itertools import count
 
 from flask import g
 
+# from jsonschema import validate, ValidationError
+
 from parse import parse
 
 import psycopg2
@@ -46,7 +48,7 @@ def get_palaces_ids():
 
 
 def init_database():
-    sql = """
+    query = """
         CREATE TABLE IF NOT EXISTS listings (
             id INTEGER NOT NULL,
             place_id INTEGER NOT NULL,
@@ -60,7 +62,7 @@ def init_database():
     """
 
     try:
-        g.db_cursor.execute(sql)
+        g.db_cursor.execute(query)
         g.db.commit()
 
     except:
@@ -124,6 +126,8 @@ def update():
 
     logging.error(f"update listings: {update_time}")
 
+    raise Exception("this is an exception")
+
     # init database
     init_database()
 
@@ -144,7 +148,8 @@ def update():
                 response = requests.get(url)
             except Exception as err:
                 logging.error(f"listing api failed, error: {err}")
-                # TODO handle this exception
+                # TODO implement retry mechanism
+                break
             if response.status_code == 416:
                 logging.error("no more page retrieve next place")
                 break
@@ -154,8 +159,14 @@ def update():
                 )
                 break
 
-            # TODO validate reponse schema here
             items = response.json()
+
+            # TODO validate response schema
+            # try:
+            #   validate(items, LISTINGS_API_RESPONSE_SCHEMA)
+            # except ValidationError as err:
+            # logging.err(f"reponse schema validation failed: {err}")
+
             logging.error(f"number of items: {len(items)}")
             for item in items:
                 try:
