@@ -41,6 +41,12 @@ def index():
 def teardown_request(error=None):
     logging.error("teardown_request")
 
+    try:
+        g.db_cursor.close()
+
+    except Exception as err:
+        logging.error(f"teardown_request error: {err}")
+
 
 @app.route("/update_data")
 def update_data():
