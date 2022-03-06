@@ -3,6 +3,6 @@ Flask = "*"
 psycopg2-binary = "*"
 requests = "*"
 parse =  "*"
-
+jsonschema = "*"
 [requires]
 python_version = "3.8"

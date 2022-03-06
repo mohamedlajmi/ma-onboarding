@@ -4,9 +4,9 @@ import re
 from datetime import datetime
 from itertools import count
 
-from flask import g
+from flask import g, make_response
 
-# from jsonschema import validate, ValidationError
+from jsonschema import validate, ValidationError
 
 from parse import parse
 
@@ -126,8 +126,6 @@ def update():
 
     logging.error(f"update listings: {update_time}")
 
-    raise Exception("this is an exception")
-
     # init database
     init_database()
 
@@ -148,24 +146,25 @@ def update():
                 response = requests.get(url)
             except Exception as err:
                 logging.error(f"listing api failed, error: {err}")
-                # TODO implement retry mechanism
-                break
+                return make_response("listings api unavailable", 503)
+
             if response.status_code == 416:
                 logging.error("no more page retrieve next place")
                 break
             elif response.status_code != 200:
                 logging.error(
-                    f"listing api failed, http status : {response.status_code}"
+                    f"listings api failed, http status : {response.status_code}"
                 )
-                break
+                return make_response("listings api failed", 503)
 
             items = response.json()
 
-            # TODO validate response schema
-            # try:
-            #   validate(items, LISTINGS_API_RESPONSE_SCHEMA)
-            # except ValidationError as err:
-            # logging.err(f"reponse schema validation failed: {err}")
+            # validate response schema
+            try:
+                validate(items, LISTINGS_API_RESPONSE_SCHEMA)
+            except ValidationError as err:
+                logging.err(f"listings api reponse schema validation failed: {err}")
+                return make_response("bad listings api response", 503)
 
             logging.error(f"number of items: {len(items)}")
             for item in items:
@@ -175,7 +174,7 @@ def update():
                     logging.error(
                         f"invalid listing from api: {json.dumps(item)}, error: {err}"
                     )
-                    # ignore invalid listing it and continue
+                    # ignore invalid listing and continue
                     continue
 
                 listing["place_id"] = place_id

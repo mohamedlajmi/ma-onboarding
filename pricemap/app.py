@@ -15,7 +15,6 @@ app.register_blueprint(api, url_prefix="/api")
 @app.before_request
 def before_request():
     """Before every requests, connect to database in case of any disconnection."""
-    logging.error("before_request")
 
     if not hasattr(app, "_request_counter"):
         app._request_counter = 0
@@ -39,11 +38,8 @@ def index():
 
 @app.teardown_request
 def teardown_request(error=None):
-    logging.error("teardown_request")
-
     try:
         g.db_cursor.close()
-
     except Exception as err:
         logging.error(f"teardown_request error: {err}")
 

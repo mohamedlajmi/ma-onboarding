@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
 import json
 import logging
 import operator
@@ -37,7 +35,7 @@ def geoms():
                 "properties": {"cog": row["cog"], "price": row["price"]},
             }
             for row in rows
-            if row[0]
+            if row[0]  # TODO why ????
         ],
     }
 
