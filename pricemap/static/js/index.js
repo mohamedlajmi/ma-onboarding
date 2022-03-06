@@ -55,7 +55,7 @@ $(function () {
     clickGeom: function (feature) {
       var cog = feature.properties.cog;
       var url = '/api/get_price/' + cog
-      var title = 'Distribution des prix (prix moyen: ' + feature.properties.price + ' €)'
+      var title = 'Distribution des prix (prix moyen: ' + feature.properties.price + ' €/m²)'
       $.getJSON(url, function (data) {
         $('#progress').show();
         View.updateChart(title, data.volumes, data.labels, data.serie_name);

@@ -50,7 +50,13 @@ def get_price(cog):
 
     logging.error(f"get_price: cog: {cog}")
 
-    RANGES = [(6000, 8000), (8000, 10000), (10000, 14000)]
+    RANGES = [
+        (6000, 8000),
+        (8000, 10000),
+        (10000, 12000),
+        (12000, 14000),
+        (14000, 16000),
+    ]
 
     query = "select id from geo_place where cog=%(cog)s"
     g.db_cursor.execute(query, {"cog": cog})
