@@ -56,6 +56,7 @@ def get_price(cog):
         (10000, 12000),
         (12000, 14000),
         (14000, 16000),
+        (16000, 18000),
     ]
 
     query = "select id from geo_place where cog=%(cog)s"
