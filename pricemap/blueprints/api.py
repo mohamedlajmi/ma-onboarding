@@ -16,7 +16,7 @@ def geoms():
             SELECT
                 ST_ASGEOJSON(geom) as geom,
                 cog,
-                avg(price/area) as price
+                round(avg(price/area)) as price
             FROM geo_place
             JOIN listings ON geo_place.id = listings.place_id
             group by (cog, geom)
