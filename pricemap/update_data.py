@@ -61,12 +61,8 @@ def init_database():
         );
     """
 
-    try:
-        g.db_cursor.execute(query)
-        g.db.commit()
-
-    except:
-        g.db.rollback()
+    g.db_cursor.execute(query)
+    g.db.commit()
 
 
 def extract_listing(item):
@@ -131,7 +127,11 @@ def update():
     logging.error(f"update listings: {update_time}")
 
     # init database
-    init_database()
+    try:
+        init_database()
+    except Exception as err:
+        logging.error(f"init db failed: {err}")
+        return make_response("init db failed", 500)
 
     # get palaces ids
     places_ids = get_palaces_ids()
