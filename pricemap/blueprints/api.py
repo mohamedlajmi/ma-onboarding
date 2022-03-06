@@ -35,7 +35,6 @@ def geoms():
                 "properties": {"cog": row["cog"], "price": row["price"]},
             }
             for row in rows
-            if row[0]  # TODO why ????
         ],
     }
 

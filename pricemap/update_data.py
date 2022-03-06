@@ -103,6 +103,10 @@ def extract_listing(item):
         raise ValueError("area not found")
     area = title_fields["area"]
 
+    if area == 0:
+        logging.error("area equal to 0")
+        raise ValueError("area equal to 0")
+
     # extratc price
     price_format = "{price:d}€"
     # remove the special Narrow No-Break Space
