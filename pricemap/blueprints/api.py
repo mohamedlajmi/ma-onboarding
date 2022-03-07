@@ -10,7 +10,7 @@ api = Blueprint("api", __name__)
 @api.route("/geoms")
 def geoms():
 
-    logging.error(f"geoms")
+    logging.info(f"geoms")
 
     query = """
             SELECT
@@ -38,7 +38,7 @@ def geoms():
         ],
     }
 
-    logging.error(f"response: {response}")
+    logging.info(f"response: {response}")
     return jsonify(response)
 
 
@@ -48,7 +48,7 @@ def get_price(cog):
     Return the volumes distribution for the given cog in storage format
     """
 
-    logging.error(f"get_price: cog: {cog}")
+    logging.info(f"get_price: cog: {cog}")
 
     RANGES = [
         (6000, 8000),
@@ -62,12 +62,12 @@ def get_price(cog):
     query = "select id from geo_place where cog=%(cog)s"
     g.db_cursor.execute(query, {"cog": cog})
     geo_place = g.db_cursor.fetchone()
-    logging.error(f"geo_place:{geo_place}")
+    logging.info(f"geo_place:{geo_place}")
     if geo_place is None:
         logging.error(f"place:{cog} not found")
         return make_response("place not found", 404)
     place_id = geo_place["id"]
-    logging.error(f"place_id:{place_id}")
+    logging.debug(f"place_id:{place_id}")
 
     query = " \nUNION ".join(
         [
@@ -80,7 +80,7 @@ def get_price(cog):
         ]
     )
 
-    logging.error(f"query: {query}")
+    logging.debug(f"query: {query}")
 
     g.db_cursor.execute(query, {"place_id": place_id})
     rows = g.db_cursor.fetchall()
@@ -101,6 +101,6 @@ def get_price(cog):
         "labels": labels,
     }
 
-    logging.error(f"response: {response}")
+    logging.info(f"response: {response}")
 
     return jsonify(response)

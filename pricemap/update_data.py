@@ -42,7 +42,7 @@ def get_palaces_ids():
     query = "select id from geo_place"
     g.db_cursor.execute(query)
     geo_places = g.db_cursor.fetchall()
-    logging.error(f"geo_places: {geo_places}")
+    logging.debug(f"geo_places: {geo_places}")
     geoms_ids = [geo_place["id"] for geo_place in geo_places]
     return geoms_ids
 
@@ -124,7 +124,7 @@ def extract_listing(item):
 def update():
     update_time = datetime.now()
 
-    logging.error(f"update listings: {update_time}")
+    logging.info(f"update listings: {update_time}")
 
     # init database
     try:
@@ -135,14 +135,14 @@ def update():
 
     # get palaces ids
     places_ids = get_palaces_ids()
-    logging.error(f"places to collect: {places_ids}")
+    logging.debug(f"places to collect: {places_ids}")
 
     listings = []
     for place_id in places_ids:
-        logging.error(f"read place: {place_id}")
+        logging.debug(f"read place: {place_id}")
 
         for page in count():
-            logging.error(f"read page: {page} of {place_id}")
+            logging.debug(f"read page: {page} of {place_id}")
 
             url = f"{LISTINGS_API_URL}/{place_id}?page={page}"
 
@@ -153,7 +153,7 @@ def update():
                 return make_response("listings api unavailable", 503)
 
             if response.status_code == 416:
-                logging.error("no more page retrieve next place")
+                logging.debug("no more page retrieve next place")
                 break
             elif response.status_code != 200:
                 logging.error(
@@ -170,7 +170,7 @@ def update():
                 logging.err(f"listings api reponse schema validation failed: {err}")
                 return make_response("bad listings api response", 503)
 
-            logging.error(f"number of items: {len(items)}")
+            logging.debug(f"number of items: {len(items)}")
             for item in items:
                 try:
                     listing = extract_listing(item)
@@ -187,11 +187,11 @@ def update():
                 listings.append(listing)
 
             if len(items) < LISTINGS_API_PAGE_SIZE:
-                logging.error("no more page retrieve next place")
+                logging.debug("no more page retrieve next place")
                 break
 
     if listings:
-        logging.error("update database")
+        logging.info("update database")
         query = """
                     INSERT INTO listings VALUES(
                         %(listing_id)s,
@@ -208,4 +208,4 @@ def update():
 
         psycopg2.extras.execute_batch(g.db_cursor, query, listings, page_size=100)
         g.db.commit()
-        logging.error(f"listings updated successfully")
+        logging.info(f"listings updated successfully")
