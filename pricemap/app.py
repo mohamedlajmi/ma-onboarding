@@ -18,12 +18,12 @@ def before_request():
 
     if not hasattr(app, "_request_counter"):
         app._request_counter = 0
-    logging.error(f"cntr:{app._request_counter}")
+    logging.debug(f"cntr:{app._request_counter}")
     if not hasattr(app, "db") or app.db.closed or app._request_counter == 10000:
         if hasattr(app, "db"):
-            logging.error("closedb")
+            logging.debug("closedb")
             app.db.close()
-        logging.error("connect db")
+        logging.debug("connect db")
         app.db = psycopg2.connect(**app.config["DATABASE"])
         app._request_counter = 0
     app._request_counter += 1
